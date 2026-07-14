@@ -8,6 +8,7 @@ php artisan route:clear
 php artisan view:clear
 
 php artisan migrate --force
+php artisan teams:sync-logos
 
 php artisan config:cache
 php artisan route:cache
