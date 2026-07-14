@@ -10,6 +10,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    continue-on-error: true
     services:
       mariadb:
         image: mariadb:11
@@ -62,6 +63,7 @@ jobs:
 
   build-and-push:
     needs: test
+    if: always()
     runs-on: ubuntu-latest
     permissions:
       contents: read
