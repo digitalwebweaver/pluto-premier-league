@@ -11,7 +11,7 @@ const props = defineProps({
     // Team brand colour (hex). Defaults to ink.
     color: { type: String, default: '#12213D' },
     logoPath: { type: String, default: null },
-    size: { type: String, default: 'md', validator: (v) => ['sm', 'md', 'lg'].includes(v) },
+    size: { type: String, default: 'md', validator: (v) => ['sm', 'md', 'lg', 'xl'].includes(v) },
     // Rank ring: 'gold' | 'silver' | 'bronze' | null (neutral ink otherwise).
     ring: { type: String, default: null },
 });
@@ -30,6 +30,7 @@ const sizeClasses = computed(
             sm: 'h-[34px] w-[34px] text-[12px]',
             md: 'h-11 w-11 text-[15px]',
             lg: 'h-16 w-16 text-[22px]',
+            xl: 'h-20 w-20 text-[26px]',
         })[props.size]
 );
 
