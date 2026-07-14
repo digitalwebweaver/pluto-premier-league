@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recently Approved · Pluto Premier League</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="recent" data-role="lt">
+  <div class="app">
+    <header class="topbar" id="topbar"></header>
+    <div class="shell-body">
+      <nav class="sidebar" id="sidebar"></nav>
+      <main class="main">
+        <section class="screen screen-narrow" data-screen-label="Recently Approved">
+          <a class="back-link" href="queue.html">&#8592; Approval queue</a>
+          <div class="page-head">
+            <h1 class="page-title">Recently approved</h1>
+            <p class="page-sub">Locked entries counting on the table. Unlock only to correct a mistake.</p>
+          </div>
+          <div id="recent-mount"></div>
+        </section>
+      </main>
+    </div>
+    <nav class="bottom-nav" id="bottom-nav"></nav>
+  </div>
+  <div id="toast-root"></div>
+  <div id="modal-root"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

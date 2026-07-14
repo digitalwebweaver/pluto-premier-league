@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Overview · Pluto Premier League</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="overview" data-role="lt">
+  <div class="app">
+    <header class="topbar" id="topbar"></header>
+    <div class="shell-body">
+      <nav class="sidebar" id="sidebar"></nav>
+      <main class="main">
+        <section class="screen" data-screen-label="LT Overview">
+          <div class="page-head">
+            <h1 class="page-title">Leadership overview</h1>
+            <p class="page-sub">Meeting 06 is open. 3 submissions are waiting for you.</p>
+          </div>
+          <div class="stat-grid" id="lt-stats"></div>
+          <h2 class="section-title" style-hook="mt">Manage</h2>
+          <div class="manage-grid">
+            <a class="manage-link" href="allteams.html"><span class="ico">&#9873;</span> All teams</a>
+            <a class="manage-link" href="meetings.html"><span class="ico">&#9635;</span> Meetings</a>
+            <a class="manage-link" href="scoring.html"><span class="ico">&#8801;</span> Scoring rules</a>
+            <a class="manage-link" href="recent.html"><span class="ico">&#128274;</span> Recently approved</a>
+          </div>
+          <div class="row-between" style-hook="mt">
+            <h2 class="section-title">Needs your attention</h2>
+            <a class="link-btn" href="queue.html">Approval queue &#8594;</a>
+          </div>
+          <div id="lt-attention"></div>
+        </section>
+      </main>
+    </div>
+    <nav class="bottom-nav" id="bottom-nav"></nav>
+  </div>
+  <div id="toast-root"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

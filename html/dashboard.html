@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · Pluto Premier League</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="dashboard" data-role="captain">
+  <div class="app">
+    <header class="topbar" id="topbar"></header>
+    <div class="shell-body">
+      <nav class="sidebar" id="sidebar"></nav>
+      <main class="main">
+        <section class="screen" data-screen-label="Dashboard">
+          <div class="page-head">
+            <h1 class="page-title">Good afternoon, Apex Alliance</h1>
+            <p class="page-sub">Meeting 06 opens today — you have a draft in progress.</p>
+          </div>
+          <div id="dash-hero"></div>
+          <div class="stat-grid" id="dash-stats"></div>
+          <div class="row-between" style-hook="mt">
+            <h2 class="section-title">League table</h2>
+            <a class="link-btn" href="league.html">Full table &#8594;</a>
+          </div>
+          <div id="dash-league"></div>
+        </section>
+      </main>
+    </div>
+    <nav class="bottom-nav" id="bottom-nav"></nav>
+  </div>
+  <div id="toast-root"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>

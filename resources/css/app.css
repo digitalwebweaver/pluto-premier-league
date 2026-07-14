@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    /* App-wide defaults — warm paper background, Inter body, ink text (design.md §2). */
+    body {
+        @apply bg-paper font-body text-ink;
+    }
+
+    /* Design tokens exposed as CSS vars for any raw-CSS needs (e.g. team crest colour). */
+    :root {
+        --ink: #12213d;
+        --ink-2: #1b2f52;
+        --paper: #f6f4ef;
+        --paper-2: #ede9df;
+        --gold: #d9a441;
+        --gold-ink: #9a6f1e;
+        --silver: #b8c0cc;
+        --bronze: #b5473a;
+        --turf: #3f8f6b;
+        --slate: #5a6684;
+        --line: #dad5c6;
+    }
+
+    /* Honour reduced-motion globally (design.md §2.4). */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}

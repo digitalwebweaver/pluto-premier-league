@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · Pluto Premier League</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="login">
+  <main class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="mark">P</div>
+        <div class="title">Pluto Premier League</div>
+        <div class="eyebrow">Season 4 · 2026</div>
+      </div>
+      <div class="login-panel">
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-login-tab="team" role="tab">Team Captain</button>
+          <button class="tab-btn" data-login-tab="lt" role="tab">Leadership</button>
+        </div>
+        <div class="field">
+          <label id="login-id-label" for="login-id">Team code</label>
+          <input class="input" id="login-id" value="apex-alliance" readonly>
+        </div>
+        <div class="field">
+          <label for="login-pw">Password</label>
+          <input class="input" id="login-pw" type="password" value="captain123" readonly>
+        </div>
+        <div class="field" style-hook="right"><a href="#">Forgot password?</a></div>
+        <button class="btn btn-primary btn-block" id="sign-in">Sign in</button>
+      </div>
+    </div>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>
