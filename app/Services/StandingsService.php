@@ -70,6 +70,7 @@ class StandingsService
                     'name' => $r['team']->name,
                     'short_code' => $r['team']->short_code,
                     'crest_color' => $r['team']->crest_color,
+                    'logo_path' => $r['team']->logo_path,
                 ],
                 'dots' => $meetings->map(fn ($m) => [
                     'seq' => $m->sequence_no,
@@ -129,6 +130,7 @@ class StandingsService
                 'name' => $r['team']->name,
                 'short_code' => $r['team']->short_code,
                 'crest_color' => $r['team']->crest_color,
+                'logo_path' => $r['team']->logo_path,
             ],
             'cells' => $r['cells'],
             'total' => $r['total'],

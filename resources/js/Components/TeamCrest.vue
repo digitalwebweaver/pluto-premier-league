@@ -2,12 +2,15 @@
 import { computed } from 'vue';
 
 // Initials on the team colour; gold/silver/bronze ring for ranks 1–3 (design.md §3).
+// When `logoPath` is set (team context only — never pass it for member avatars),
+// renders the real logo in a rounded tile instead of the initials circle.
 const props = defineProps({
     // Full team name — initials are derived, or pass `initials` explicitly.
     name: { type: String, default: '' },
     initials: { type: String, default: null },
     // Team brand colour (hex). Defaults to ink.
     color: { type: String, default: '#12213D' },
+    logoPath: { type: String, default: null },
     size: { type: String, default: 'md', validator: (v) => ['sm', 'md', 'lg'].includes(v) },
     // Rank ring: 'gold' | 'silver' | 'bronze' | null (neutral ink otherwise).
     ring: { type: String, default: null },
@@ -37,16 +40,33 @@ const RINGS = {
 };
 
 // Double ring via box-shadow (paper gap + coloured ring), matching the mockup.
+// Follows whatever border-radius the element has, so it works for both the
+// circular initials badge and the rounded logo tile.
 const ringColor = computed(() => RINGS[props.ring] ?? '#12213D');
 const ringWidth = computed(() => (props.size === 'sm' ? 3.5 : 4));
+const ringShadow = computed(() => `0 0 0 2px var(--paper), 0 0 0 ${ringWidth.value}px ${ringColor.value}`);
+
 const crestStyle = computed(() => ({
     backgroundColor: props.color,
-    boxShadow: `0 0 0 2px var(--paper), 0 0 0 ${ringWidth.value}px ${ringColor.value}`,
+    boxShadow: ringShadow.value,
+}));
+
+const logoTileStyle = computed(() => ({
+    boxShadow: ringShadow.value,
 }));
 </script>
 
 <template>
     <span
+        v-if="logoPath"
+        class="flex shrink-0 items-center justify-center overflow-hidden rounded-input bg-white p-1"
+        :class="sizeClasses"
+        :style="logoTileStyle"
+    >
+        <img :src="logoPath" :alt="`${name} logo`" class="h-full w-full object-contain" loading="lazy" />
+    </span>
+    <span
+        v-else
         class="flex shrink-0 items-center justify-center rounded-full font-display font-semibold text-paper"
         :class="sizeClasses"
         :style="crestStyle"

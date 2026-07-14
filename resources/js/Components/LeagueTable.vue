@@ -33,9 +33,16 @@ const inr = (n) => Number(n).toLocaleString('en-IN');
                 <span v-else-if="row.movement === 'down'" class="text-bronze">▼{{ row.movement_by }}</span>
                 <span v-else class="text-slate">–</span>
             </div>
-            <div class="flex min-w-0 items-center gap-3">
-                <TeamCrest :name="row.team.name" :initials="row.team.short_code" :color="row.team.crest_color" size="sm" :ring="row.ring" />
-                <span class="truncate font-display text-[17px] font-semibold text-ink">{{ row.team.name }}</span>
+            <div class="flex min-w-0 items-center gap-3.5">
+                <TeamCrest
+                    :name="row.team.name"
+                    :initials="row.team.short_code"
+                    :color="row.team.crest_color"
+                    :logo-path="row.team.logo_path"
+                    size="md"
+                    :ring="row.ring"
+                />
+                <span class="truncate font-display text-lg font-semibold text-ink">{{ row.team.name }}</span>
             </div>
             <div class="flex justify-center gap-1.5">
                 <span
@@ -55,13 +62,20 @@ const inr = (n) => Number(n).toLocaleString('en-IN');
         <div
             v-for="row in rows"
             :key="row.team.id"
-            class="grid grid-cols-[26px_40px_1fr_auto] items-center gap-3 rounded-card border bg-white px-3.5 py-3"
+            class="grid grid-cols-[26px_48px_1fr_auto] items-center gap-3 rounded-card border bg-white px-3.5 py-3"
             :class="row.is_current ? 'border-gold/55 bg-gold/12 shadow-row' : 'border-line'"
         >
             <div class="text-center font-mono text-base font-semibold" :class="row.rank <= 3 ? 'text-ink' : 'text-slate'">
                 {{ row.rank }}
             </div>
-            <TeamCrest :name="row.team.name" :initials="row.team.short_code" :color="row.team.crest_color" size="sm" :ring="row.ring" />
+            <TeamCrest
+                :name="row.team.name"
+                :initials="row.team.short_code"
+                :color="row.team.crest_color"
+                :logo-path="row.team.logo_path"
+                size="md"
+                :ring="row.ring"
+            />
             <div class="min-w-0">
                 <p class="truncate font-display text-base font-semibold text-ink">{{ row.team.name }}</p>
                 <div class="mt-1 flex gap-1">
