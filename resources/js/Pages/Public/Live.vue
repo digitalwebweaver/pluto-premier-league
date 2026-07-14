@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import TeamCrest from '@/Components/TeamCrest.vue';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 defineProps({
     season: { type: Object, default: null },
@@ -62,5 +63,6 @@ const ringHex = { gold: '#D9A441', silver: '#B8C0CC', bronze: '#B5473A' };
 
             <p class="mt-8 text-center font-mono text-xs text-silver/70">LVB Pluto Premier League · approved results · updates automatically</p>
         </div>
+        <CompanyFooter dark />
     </div>
 </template>

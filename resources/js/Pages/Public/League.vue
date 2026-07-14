@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import LeagueTable from '@/Components/LeagueTable.vue';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 defineProps({
     season: { type: Object, default: null },
@@ -39,5 +40,6 @@ defineProps({
 
             <p class="mt-6 text-center font-mono text-[11px] text-slate">Approved results only · LVB Pluto Premier League</p>
         </main>
+        <CompanyFooter />
     </div>
 </template>

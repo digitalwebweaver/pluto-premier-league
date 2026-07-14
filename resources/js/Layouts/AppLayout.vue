@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { NAV, ACTIVE_FOR, HOME } from '@/nav';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 // Persistent layout so nav + scroll survive Inertia visits (design.md §7).
 const props = defineProps({
@@ -166,10 +167,11 @@ function signOut() {
             </aside>
 
             <!-- Content -->
-            <main class="min-w-0 flex-1 overflow-auto px-4 py-6 nav:px-9 nav:py-8">
-                <div class="mx-auto max-w-5xl animate-fade-up">
+            <main class="flex min-w-0 flex-1 flex-col overflow-auto px-4 py-6 nav:px-9 nav:py-8">
+                <div class="mx-auto w-full max-w-5xl flex-1 animate-fade-up">
                     <slot />
                 </div>
+                <CompanyFooter class="mx-auto w-full max-w-5xl" />
             </main>
         </div>
 

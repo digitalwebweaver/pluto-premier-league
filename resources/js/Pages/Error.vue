@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 // On-brand error screen (design.md §11 error states). Rendered by the
 // exception handler for 403/404/419/429/500/503.
@@ -47,7 +48,8 @@ const info = computed(() => MAP[props.status] ?? MAP[500]);
 <template>
     <Head :title="`${status} · ${info.title}`" />
 
-    <main class="flex min-h-screen items-center justify-center bg-paper px-6">
+    <main class="flex min-h-screen flex-col bg-paper px-6">
+        <div class="flex flex-1 items-center justify-center">
         <div class="w-full max-w-md text-center">
             <p
                 class="font-display text-[80px] font-bold leading-none"
@@ -64,5 +66,7 @@ const info = computed(() => MAP[props.status] ?? MAP[500]);
                 Back to home
             </Link>
         </div>
+        </div>
+        <CompanyFooter />
     </main>
 </template>

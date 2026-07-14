@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import AppButton from '@/Components/AppButton.vue';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 defineProps({
     appName: { type: String, default: 'Pluto Premier League' },
@@ -77,8 +78,7 @@ defineProps({
             </div>
         </section>
 
-        <footer class="border-t border-line px-5 py-6 text-center font-mono text-[11px] text-slate">
-            Pluto Premier League · LVB Pluto
-        </footer>
+        <p class="px-5 pb-4 text-center font-mono text-[11px] text-slate">Pluto Premier League · LVB Pluto</p>
+        <CompanyFooter />
     </div>
 </template>

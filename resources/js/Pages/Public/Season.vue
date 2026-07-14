@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import TeamCrest from '@/Components/TeamCrest.vue';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 defineProps({
     season: { type: Object, default: null },
@@ -63,5 +64,6 @@ const inr = (n) => Number(n).toLocaleString('en-IN');
             </div>
             <p class="mt-6 text-center font-mono text-[11px] text-slate">Approved results only · LVB Pluto Premier League</p>
         </main>
+        <CompanyFooter />
     </div>
 </template>

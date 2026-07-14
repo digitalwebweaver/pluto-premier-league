@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 import StatusPill from '@/Components/StatusPill.vue';
 import TeamCrest from '@/Components/TeamCrest.vue';
 import NumberStepper from '@/Components/NumberStepper.vue';
@@ -170,5 +171,6 @@ const windowStates = ['open', 'closed', 'scheduled'];
                 </EmptyState>
             </section>
         </div>
+        <CompanyFooter />
     </main>
 </template>

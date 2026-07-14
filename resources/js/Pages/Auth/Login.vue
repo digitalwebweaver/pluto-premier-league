@@ -1,6 +1,7 @@
 <script setup>
 import { ref, nextTick } from 'vue';
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import CompanyFooter from '@/Components/CompanyFooter.vue';
 
 defineProps({
     canResetPassword: { type: Boolean, default: true },
@@ -39,9 +40,10 @@ function submit() {
     <Head title="Sign in" />
 
     <main
-        class="flex min-h-screen items-center justify-center px-6 py-10"
+        class="flex min-h-screen flex-col px-6 py-10"
         style="background-image: radial-gradient(circle at 20% 0%, var(--ink-2) 0%, var(--ink) 60%)"
     >
+        <div class="flex flex-1 items-center justify-center">
         <div class="w-full max-w-[400px]">
             <!-- Brand -->
             <div class="mb-7 text-center">
@@ -146,5 +148,7 @@ function submit() {
                 </form>
             </div>
         </div>
+        </div>
+        <CompanyFooter dark />
     </main>
 </template>
