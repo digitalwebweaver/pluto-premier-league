@@ -2,8 +2,6 @@ name: CI
 
 # Optional (Phase 0D). Runs once the repo is pushed to GitHub.
 on:
-  push:
-    branches: [main, master]
   pull_request:
 
 jobs:
