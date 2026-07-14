@@ -20,10 +20,10 @@ class TeamSeeder extends Seeder
         }
 
         $teams = [
-            ['name' => 'Digital Titans', 'short_code' => 'DT', 'crest_color' => '#1B2F52'],
-            ['name' => 'XtraVision', 'short_code' => 'XV', 'crest_color' => '#3F8F6B'],
-            ['name' => 'Madhuvan Stallion', 'short_code' => 'MS', 'crest_color' => '#B5473A'],
-            ['name' => 'Jupiter Wealth', 'short_code' => 'JW', 'crest_color' => '#9A6F1E'],
+            ['name' => 'Digital Titans', 'short_code' => 'DT', 'crest_color' => '#1B2F52', 'logo_path' => '/images/teams/digital-titans.jpeg'],
+            ['name' => 'XtraVision', 'short_code' => 'XV', 'crest_color' => '#3F8F6B', 'logo_path' => '/images/teams/xtravision.jpeg'],
+            ['name' => 'Madhuvan Stallion', 'short_code' => 'MS', 'crest_color' => '#B5473A', 'logo_path' => '/images/teams/madhuvan-stallion.jpeg'],
+            ['name' => 'Jupiter Wealth', 'short_code' => 'JW', 'crest_color' => '#9A6F1E', 'logo_path' => '/images/teams/jupiter-wealth.jpeg'],
         ];
 
         foreach ($teams as $t) {

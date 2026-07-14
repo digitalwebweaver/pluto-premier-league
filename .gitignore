@@ -17,6 +17,7 @@ npm-debug.log
 yarn-error.log
 /auth.json
 /sql
+/team
 /.fleet
 /.idea
 /.nova

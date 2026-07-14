@@ -18,6 +18,7 @@ class Team extends Model
         'name',
         'short_code',
         'crest_color',
+        'logo_path',
         'is_active',
     ];
 

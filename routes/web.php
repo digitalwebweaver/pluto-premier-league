@@ -17,7 +17,7 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'appName' => config('app.name'),
-        'phase' => 'Phase 0C — app shell live',
+        'teams' => \App\Models\Team::active()->orderBy('name')->get(['name', 'short_code', 'crest_color', 'logo_path']),
     ]);
 })->name('home');
 
