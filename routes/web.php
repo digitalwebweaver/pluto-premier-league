@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LT\ApprovalController;
 use App\Http\Controllers\LT\CategoryController;
+use App\Http\Controllers\LT\OverviewController;
 use App\Http\Controllers\LT\ExportController;
 use App\Http\Controllers\LT\LoginManagementController;
 use App\Http\Controllers\LT\MeetingController;
@@ -54,7 +55,7 @@ Route::prefix('team')->middleware('guard:team')->group(function () {
 
 // Leadership (LT) area — requires the `lt` guard (cross-guard → 403).
 Route::prefix('lt')->middleware('guard:lt')->group(function () {
-    Route::get('/', fn () => Inertia::render('LT/Overview'))->name('lt.overview');
+    Route::get('/', [OverviewController::class, 'index'])->name('lt.overview');
     // Approval queue + review + actions (Phase 4B/4C).
     Route::get('/queue', [ApprovalController::class, 'queue'])->name('lt.queue');
     Route::get('/queue/{entry}', [ApprovalController::class, 'review'])->name('lt.queue.review');
