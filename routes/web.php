@@ -3,6 +3,7 @@
 use App\Http\Controllers\LT\ApprovalController;
 use App\Http\Controllers\LT\CategoryController;
 use App\Http\Controllers\LT\OverviewController;
+use App\Http\Controllers\LT\TeamRosterController;
 use App\Http\Controllers\LT\ExportController;
 use App\Http\Controllers\LT\LoginManagementController;
 use App\Http\Controllers\LT\MeetingController;
@@ -88,6 +89,12 @@ Route::prefix('lt')->middleware('guard:lt')->group(function () {
     Route::get('/teams/{team}/edit', [TeamController::class, 'edit'])->name('lt.teams.edit');
     Route::put('/teams/{team}', [TeamController::class, 'update'])->name('lt.teams.update');
     Route::patch('/teams/{team}/toggle', [TeamController::class, 'toggleActive'])->name('lt.teams.toggle');
+    // Per-team roster management (owner request) — LT can add/edit members for any team.
+    Route::get('/teams/{team}/roster', [TeamRosterController::class, 'index'])->name('lt.teams.roster');
+    Route::post('/teams/{team}/roster', [TeamRosterController::class, 'store'])->name('lt.teams.roster.store');
+    Route::get('/teams/{team}/roster/{member}/edit', [TeamRosterController::class, 'edit'])->name('lt.teams.roster.edit');
+    Route::put('/teams/{team}/roster/{member}', [TeamRosterController::class, 'update'])->name('lt.teams.roster.update');
+    Route::patch('/teams/{team}/roster/{member}/toggle', [TeamRosterController::class, 'toggleActive'])->name('lt.teams.roster.toggle');
     // Meetings management (FR-MTG-001..005, 008).
     Route::get('/meetings', [MeetingController::class, 'index'])->name('lt.meetings');
     Route::post('/meetings', [MeetingController::class, 'store'])->name('lt.meetings.store');

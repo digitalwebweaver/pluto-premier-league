@@ -61,6 +61,12 @@ function toggle(id) {
                     <StatusPill v-if="t.is_active" status="approved" label="Active" />
                     <StatusPill v-else status="closed" label="Inactive" />
                     <Link
+                        :href="`/lt/teams/${t.id}/roster`"
+                        class="min-h-9 shrink-0 rounded-input border border-line px-3 py-2 text-[13px] font-semibold text-ink transition hover:bg-paper-2"
+                    >
+                        Roster
+                    </Link>
+                    <Link
                         :href="`/lt/teams/${t.id}/edit`"
                         class="min-h-9 shrink-0 rounded-input border border-ink px-3 py-2 text-[13px] font-semibold text-ink transition hover:bg-paper-2"
                     >
