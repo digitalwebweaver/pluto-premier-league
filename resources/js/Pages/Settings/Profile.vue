@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 const props = defineProps({
@@ -20,6 +20,13 @@ const form = useForm({
 
 function submit() {
     form.patch(route('profile.update'), { preserveScroll: true });
+}
+
+// The sidebar's own Sign out button is hidden below the nav: breakpoint
+// (<680px) — this is the only sign-out path reachable on a phone, since the
+// top bar's identity badge links here.
+function signOut() {
+    router.post('/logout');
 }
 </script>
 
@@ -116,6 +123,21 @@ function submit() {
             >
                 Change password
             </Link>
+        </div>
+
+        <!-- Sign out -->
+        <div class="flex items-center justify-between rounded-lg border border-line bg-white px-6 py-4">
+            <div>
+                <p class="font-display text-[15px] font-semibold text-ink">Sign out</p>
+                <p class="text-sm text-slate">End your session on this device.</p>
+            </div>
+            <button
+                type="button"
+                class="min-h-9 rounded-input border border-bronze/50 px-4 py-2 text-[13px] font-semibold text-bronze transition hover:bg-bronze/5"
+                @click="signOut"
+            >
+                Sign out
+            </button>
         </div>
     </div>
 </template>

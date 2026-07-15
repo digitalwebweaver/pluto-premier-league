@@ -109,6 +109,18 @@ function signOut() {
                     >{{ initials }}</span
                 >
             </Link>
+
+            <!-- Sign out — the sidebar's copy of this is hidden below 680px, so
+                 this is the only one-tap sign-out on a phone. -->
+            <button
+                type="button"
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-paper transition hover:bg-white/5 nav:hidden"
+                title="Sign out"
+                aria-label="Sign out"
+                @click="signOut"
+            >
+                <span class="text-lg leading-none" aria-hidden="true">⏻</span>
+            </button>
             </div>
         </header>
 
