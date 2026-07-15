@@ -36,7 +36,7 @@ function body(n) {
     return {
         approved: `${p.total} points now count on the league table.`,
         sent_back: p.note,
-        corrected: `${p.reason} (new total: ${p.total})`,
+        corrected: `${(p.reasons ?? []).join('\n')}\n(new total: ${p.total})`,
         new_meeting: p.date ? `Meeting date: ${p.date}.` : '',
         announcement: p.body,
     }[n.type] ?? '';
@@ -78,7 +78,7 @@ function ago(iso) {
                     <p class="font-display text-[15px] font-semibold text-ink">{{ title(n) }}</p>
                     <span v-if="n.is_new" class="rounded-full bg-gold px-1.5 py-px font-mono text-[9px] font-bold text-ink">NEW</span>
                 </div>
-                <p v-if="body(n)" class="mt-0.5 text-sm text-slate">{{ body(n) }}</p>
+                <p v-if="body(n)" class="mt-0.5 whitespace-pre-line text-sm text-slate">{{ body(n) }}</p>
                 <p class="mt-1 font-mono text-[11px] text-slate/70">{{ ago(n.created_at) }}</p>
             </div>
         </li>

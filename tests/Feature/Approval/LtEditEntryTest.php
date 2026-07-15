@@ -18,8 +18,9 @@ use Tests\TestCase;
 
 /**
  * LT can correct a submitted entry directly instead of sending it back and
- * waiting on the team — a required reason is audited and the team notified
- * (owner request, not a numbered requirement).
+ * waiting on the team — a reason is required PER changed category (not one
+ * blanket reason), audited and shown to the team (owner request, not a
+ * numbered requirement).
  */
 class LtEditEntryTest extends TestCase
 {
@@ -32,7 +33,7 @@ class LtEditEntryTest extends TestCase
         $meeting = Meeting::factory()->open()->create(['season_id' => $season->id]);
         $team = Team::factory()->create();
         $captain = TeamUser::factory()->create(['team_id' => $team->id]);
-        $vis = Category::factory()->create(['input_shape' => Category::COUNT_SUBTYPE]);
+        $vis = Category::factory()->create(['name' => 'Visitors', 'input_shape' => Category::COUNT_SUBTYPE]);
         $hot = ScoringRule::factory()->create(['category_id' => $vis->id, 'subtype_label' => 'Hot', 'points' => 300]);
         $open = ScoringRule::factory()->create(['category_id' => $vis->id, 'subtype_label' => 'Open', 'points' => 200]);
         $meeting->categories()->attach($vis->id);
@@ -50,7 +51,7 @@ class LtEditEntryTest extends TestCase
 
         $this->actingAs(LtUser::factory()->create(), 'lt')
             ->put("/lt/queue/{$entry->id}", [
-                'reason' => 'Was logged Hot but is actually Open — corrected the subtype.',
+                'reasons' => [$vis->id => 'Was logged Hot but is actually Open — corrected the subtype.'],
                 'lines' => [
                     ['category_id' => $vis->id, 'scoring_rule_id' => $open->id, 'member_id' => $member->id, 'count' => 1],
                 ],
@@ -65,30 +66,45 @@ class LtEditEntryTest extends TestCase
         $this->assertSame($open->id, $fresh->lines->first()->scoring_rule_id);
     }
 
-    public function test_reason_is_required(): void
+    public function test_reasons_are_required(): void
     {
         [, , , $entry, $vis, $hot, , $member] = $this->submitted();
 
         $this->actingAs(LtUser::factory()->create(), 'lt')
             ->put("/lt/queue/{$entry->id}", [
-                'reason' => '',
+                'reasons' => [],
                 'lines' => [
                     ['category_id' => $vis->id, 'scoring_rule_id' => $hot->id, 'member_id' => $member->id, 'count' => 2],
                 ],
                 'attendance' => [],
             ])
-            ->assertSessionHasErrors('reason');
+            ->assertSessionHasErrors('reasons');
 
         $this->assertSame(300, $entry->fresh()->computed_total); // unchanged
     }
 
-    public function test_edit_is_audited_and_the_team_is_notified(): void
+    public function test_a_reason_must_be_at_least_three_characters(): void
+    {
+        [, , , $entry, $vis, , $open, $member] = $this->submitted();
+
+        $this->actingAs(LtUser::factory()->create(), 'lt')
+            ->put("/lt/queue/{$entry->id}", [
+                'reasons' => [$vis->id => 'ok'],
+                'lines' => [
+                    ['category_id' => $vis->id, 'scoring_rule_id' => $open->id, 'member_id' => $member->id, 'count' => 1],
+                ],
+                'attendance' => [],
+            ])
+            ->assertSessionHasErrors("reasons.{$vis->id}");
+    }
+
+    public function test_edit_is_audited_with_the_category_name_and_the_team_is_notified(): void
     {
         [, $team, , $entry, $vis, , $open, $member] = $this->submitted();
 
         $this->actingAs(LtUser::factory()->create(), 'lt')
             ->put("/lt/queue/{$entry->id}", [
-                'reason' => 'Fixed the subtype.',
+                'reasons' => [$vis->id => 'Fixed the subtype.'],
                 'lines' => [
                     ['category_id' => $vis->id, 'scoring_rule_id' => $open->id, 'member_id' => $member->id, 'count' => 1],
                 ],
@@ -99,22 +115,22 @@ class LtEditEntryTest extends TestCase
         $this->assertSame('lt', $history->actor_type);
         $this->assertSame('submitted', $history->from_status);
         $this->assertSame('submitted', $history->to_status);
-        $this->assertSame('Fixed the subtype.', $history->note);
+        $this->assertSame('Visitors: Fixed the subtype.', $history->note);
 
         $notification = Notification::where('team_id', $team->id)->where('type', 'corrected')->first();
         $this->assertNotNull($notification);
-        $this->assertSame('Fixed the subtype.', $notification->payload['reason']);
+        $this->assertSame(['Visitors: Fixed the subtype.'], $notification->payload['reasons']);
         $this->assertSame(200, $notification->payload['total']);
     }
 
     public function test_lt_cannot_edit_a_non_submitted_entry(): void
     {
-        [, , , $entry] = $this->submitted();
+        [, , , $entry, $vis] = $this->submitted();
         $lt = LtUser::factory()->create();
         $this->actingAs($lt, 'lt')->post("/lt/queue/{$entry->id}/approve"); // now approved
 
         $this->actingAs($lt, 'lt')
-            ->put("/lt/queue/{$entry->id}", ['reason' => 'too late', 'lines' => [], 'attendance' => []])
+            ->put("/lt/queue/{$entry->id}", ['reasons' => [$vis->id => 'too late'], 'lines' => [], 'attendance' => []])
             ->assertRedirect(route('lt.queue'))
             ->assertSessionHas('error');
 
@@ -128,7 +144,7 @@ class LtEditEntryTest extends TestCase
 
         $this->actingAs(LtUser::factory()->create(), 'lt')
             ->put("/lt/queue/{$entry->id}", [
-                'reason' => 'testing cross-team guard',
+                'reasons' => [$vis->id => 'testing cross-team guard'],
                 'lines' => [
                     ['category_id' => $vis->id, 'scoring_rule_id' => $hot->id, 'member_id' => $stranger->id, 'count' => 1],
                 ],
@@ -137,12 +153,28 @@ class LtEditEntryTest extends TestCase
             ->assertSessionHasErrors('lines.0.member_id');
     }
 
+    public function test_reason_key_must_be_an_applicable_category(): void
+    {
+        [, , , $entry, $vis, $hot, , $member] = $this->submitted();
+        $other = Category::factory()->create(['input_shape' => Category::COUNT_SUBTYPE]); // not attached to this meeting
+
+        $this->actingAs(LtUser::factory()->create(), 'lt')
+            ->put("/lt/queue/{$entry->id}", [
+                'reasons' => [$other->id => 'not applicable to this meeting'],
+                'lines' => [
+                    ['category_id' => $vis->id, 'scoring_rule_id' => $hot->id, 'member_id' => $member->id, 'count' => 1],
+                ],
+                'attendance' => [],
+            ])
+            ->assertSessionHasErrors('reasons');
+    }
+
     public function test_captain_cannot_reach_the_lt_edit_route(): void
     {
-        [$captain, , , $entry] = $this->submitted();
+        [$captain, , , $entry, $vis] = $this->submitted();
 
         $this->actingAs($captain, 'team')
-            ->put("/lt/queue/{$entry->id}", ['reason' => 'x', 'lines' => [], 'attendance' => []])
+            ->put("/lt/queue/{$entry->id}", ['reasons' => [$vis->id => 'x'], 'lines' => [], 'attendance' => []])
             ->assertForbidden();
     }
 }

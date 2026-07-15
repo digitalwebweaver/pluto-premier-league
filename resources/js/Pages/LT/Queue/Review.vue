@@ -56,10 +56,11 @@ function sendBack() {
     sendBackForm.post(route('lt.queue.sendback', props.entry.id));
 }
 
-// --- Correct the entry directly (owner request) — requires a reason, audited + team-notified. ---
+// --- Correct the entry directly (owner request) — a reason is required PER
+// changed category (not one blanket reason), audited + team-notified. ---
 const showEdit = ref(false);
 const editor = ref(null);
-const editForm = useForm({ reason: '', lines: [], attendance: [] });
+const editForm = useForm({ lines: [], attendance: [], reasons: {} });
 function startEdit() {
     showSendBack.value = false;
     showEdit.value = true;
@@ -73,7 +74,19 @@ function saveEdit() {
     const payload = editor.value.collectPayload();
     editForm.lines = payload.lines;
     editForm.attendance = payload.attendance;
-    editForm.put(route('lt.queue.update', props.entry.id), { preserveScroll: true });
+    editForm.reasons = payload.reasons;
+    editForm.put(route('lt.queue.update', props.entry.id), {
+        preserveScroll: true,
+        // Inertia reuses this component instance (same route/component), so
+        // local state like showEdit/reasons won't reset on its own — without
+        // this the LT would land back in the edit form still showing the
+        // reason they just submitted, as if nothing had happened.
+        onSuccess: () => {
+            showEdit.value = false;
+            editForm.reset();
+            editForm.clearErrors();
+        },
+    });
 }
 </script>
 
@@ -115,25 +128,17 @@ function saveEdit() {
                     {{ h.to_status === 'sent_back' ? '↵ Sent back' : '✎ Corrected by LT' }}
                 </span>
                 <span class="text-slate"> · {{ fmtDateTime(h.created_at) }}</span>
-                <p class="mt-0.5 text-ink">{{ h.note }}</p>
+                <p class="mt-0.5 whitespace-pre-line text-ink">{{ h.note }}</p>
             </li>
         </ul>
     </div>
 
     <!-- Editable correction form -->
     <template v-if="showEdit">
-        <div class="mb-4 rounded-lg border border-gold/50 bg-gold/5 px-5 py-4">
-            <label class="mb-1.5 block text-xs font-semibold text-slate">
-                Reason for this correction <span class="text-bronze">(required — the team will see this)</span>
-            </label>
-            <textarea
-                v-model="editForm.reason"
-                rows="2"
-                class="w-full rounded-input border border-line bg-white px-3.5 py-2 text-sm text-ink outline-none focus:border-gold"
-                :class="{ 'border-bronze': editForm.errors.reason }"
-                placeholder="e.g. Visitor was logged as Hot but is actually Open — corrected the subtype."
-            ></textarea>
-            <p v-if="editForm.errors.reason" class="mt-1 text-xs font-medium text-bronze">{{ editForm.errors.reason }}</p>
+        <div class="mb-4 rounded-lg border border-line bg-white px-5 py-3 text-sm text-slate">
+            Change whatever needs fixing, then expand that category to add a reason for it —
+            each changed category needs its own reason (the team will see them).
+            <span v-if="editForm.errors.reasons" class="mt-1 block text-xs font-medium text-bronze">{{ editForm.errors.reasons }}</span>
         </div>
 
         <div class="mb-24 nav:mb-4">
@@ -144,6 +149,7 @@ function saveEdit() {
                 :lines="editableLines"
                 :attendance="editableAttendance"
                 :editable="true"
+                :require-reasons="true"
             />
         </div>
 
@@ -157,7 +163,7 @@ function saveEdit() {
                     <button type="button" class="text-[13px] font-semibold text-slate" @click="cancelEdit">Cancel</button>
                     <button
                         type="button"
-                        :disabled="editForm.processing || !editForm.reason"
+                        :disabled="editForm.processing || !editor?.anyDirty || !editor?.allReasonsFilled"
                         class="min-h-tap rounded-input bg-gold px-5 text-sm font-semibold text-ink transition hover:brightness-95 disabled:opacity-60"
                         @click="saveEdit"
                     >

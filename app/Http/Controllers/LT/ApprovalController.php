@@ -145,8 +145,9 @@ class ApprovalController extends Controller
 
     /**
      * LT corrects a submitted entry's lines/attendance directly, with a
-     * required reason (audited + team-notified) — an alternative to
-     * send-back for obvious mistakes that don't need the team's input.
+     * required reason **per changed category** (audited + team-notified) —
+     * an alternative to send-back for obvious mistakes that don't need the
+     * team's input.
      */
     public function update(Request $request, MeetingEntry $entry, ApprovalService $approval): RedirectResponse
     {
@@ -156,7 +157,8 @@ class ApprovalController extends Controller
         }
 
         $data = $request->validate([
-            'reason' => ['required', 'string', 'min:5', 'max:1000'],
+            'reasons' => ['required', 'array', 'min:1'],
+            'reasons.*' => ['required', 'string', 'min:3', 'max:500'],
             'lines' => ['array'],
             'lines.*.category_id' => ['required', 'integer'],
             'lines.*.scoring_rule_id' => ['required', 'integer'],
@@ -173,10 +175,28 @@ class ApprovalController extends Controller
 
         $this->validateLineOwnership($entry, $data['lines'] ?? []);
         $this->validateAttendanceOwnership($entry, $data['attendance'] ?? []);
+        $this->validateReasonCategories($entry, $data['reasons']);
 
-        $approval->editByLt($entry, $request->user('lt'), $data['lines'] ?? [], $data['attendance'] ?? [], $data['reason']);
+        $approval->editByLt($entry, $request->user('lt'), $data['lines'] ?? [], $data['attendance'] ?? [], $data['reasons']);
 
         return redirect()->route('lt.queue.review', $entry)->with('success', 'Entry updated.');
+    }
+
+    /**
+     * Every reason key must be a category that actually applies to this
+     * meeting — guards against a tampered payload naming an arbitrary id.
+     *
+     * @param  array<int, string>  $reasons
+     */
+    private function validateReasonCategories(MeetingEntry $entry, array $reasons): void
+    {
+        $applicableIds = $entry->meeting->categories()->where('is_active', true)->pluck('categories.id')->flip();
+
+        foreach (array_keys($reasons) as $categoryId) {
+            if (! $applicableIds->has((int) $categoryId)) {
+                throw ValidationException::withMessages(['reasons' => 'A reason was given for a category that does not apply to this meeting.']);
+            }
+        }
     }
 
     /**

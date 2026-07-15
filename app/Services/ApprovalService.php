@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\IllegalTransitionException;
+use App\Models\Category;
 use App\Models\EntryStatusHistory;
 use App\Models\LtUser;
 use App\Models\MeetingEntry;
@@ -88,19 +89,21 @@ class ApprovalService
 
     /**
      * LT corrects a submitted entry's lines/attendance directly (instead of
-     * sending it back and waiting on the team) — a required reason is logged
-     * to the audit trail and the team is notified, so nothing changes silently.
-     * Status stays `submitted`; the corrected entry is recomputed and can
-     * then be approved/sent back as normal.
+     * sending it back and waiting on the team) — a reason is required **per
+     * changed category** (not one blanket reason), logged to the audit trail
+     * and shown to the team, so nothing changes silently. Status stays
+     * `submitted`; the corrected entry is recomputed and can then be
+     * approved/sent back as normal.
      *
      * @param  array<int, array<string, mixed>>  $lines
      * @param  array<int, array<string, mixed>>  $attendance
+     * @param  array<int, string>  $reasons  category_id => reason
      */
-    public function editByLt(MeetingEntry $entry, LtUser $lt, array $lines, array $attendance, string $reason): MeetingEntry
+    public function editByLt(MeetingEntry $entry, LtUser $lt, array $lines, array $attendance, array $reasons): MeetingEntry
     {
         $this->assertFrom($entry, [MeetingEntry::SUBMITTED]);
 
-        return DB::transaction(function () use ($entry, $lt, $lines, $attendance, $reason) {
+        return DB::transaction(function () use ($entry, $lt, $lines, $attendance, $reasons) {
             $entry->lines()->delete();
             foreach ($lines as $line) {
                 if (($line['count'] ?? 0) <= 0) {
@@ -128,13 +131,19 @@ class ApprovalService
 
             $breakdown = $this->scorer->breakdown($entry); // authoritative recompute
 
+            $categoryNames = Category::whereIn('id', array_keys($reasons))->pluck('name', 'id');
+            $reasonLines = collect($reasons)
+                ->map(fn ($reason, $categoryId) => sprintf('%s: %s', $categoryNames[$categoryId] ?? "Category #{$categoryId}", $reason))
+                ->values()->all();
+            $note = implode("\n", $reasonLines);
+
             // Same status in/out — this is a correction, not a transition — but
             // still goes through the same audit trail as every other change.
-            $this->record($entry, $entry->status, $entry->status, 'lt', $lt->id, $reason);
+            $this->record($entry, $entry->status, $entry->status, 'lt', $lt->id, $note);
 
             $this->notifications->notifyTeam($entry->team_id, 'corrected', [
                 'meeting' => $entry->meeting->sequence_no,
-                'reason' => $reason,
+                'reasons' => $reasonLines,
                 'total' => $breakdown['total'],
             ]);
 

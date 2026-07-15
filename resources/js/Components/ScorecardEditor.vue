@@ -14,6 +14,10 @@ const props = defineProps({
     lines: { type: Array, default: () => [] },
     attendance: { type: Array, default: () => [] },
     editable: { type: Boolean, default: true },
+    // LT-correction mode: tracks which categories were actually changed vs
+    // the original data and requires (and collects) a reason for each one —
+    // not used by the captain's own scorecard.
+    requireReasons: { type: Boolean, default: false },
 });
 
 const LINE_SHAPES = ['count_subtype', 'amount_subtype'];
@@ -69,6 +73,60 @@ const attendance = reactive(
         };
     })
 );
+
+// --- Per-category dirty tracking + reasons (requireReasons mode only) ---
+// Snapshots are taken synchronously right after hydration above, before any
+// user interaction, so they reflect exactly what was originally persisted.
+function lineSignature(rows) {
+    return (rows || [])
+        .map((r) => `${r.member_id ?? ''}|${(r.visitor_name ?? '').trim()}|${r.scoring_rule_id ?? ''}|${Number(r.count) || 0}|${r.amount ?? ''}`)
+        .sort()
+        .join(';');
+}
+const originalLineSig = {};
+const originalBinaryOn = {};
+const originalTraining = {};
+props.categories.forEach((c) => {
+    if (isLineShape(c.input_shape)) {
+        originalLineSig[c.id] = lineSignature(rowsByCat[c.id]);
+    } else if (c.input_shape === 'binary_flat') {
+        originalBinaryOn[c.id] = binaryOn[c.id];
+    } else if (c.input_shape === 'conditional_multiplier') {
+        originalTraining[c.id] = { members_present: training[c.id].members_present, whole_team: training[c.id].whole_team };
+    }
+});
+const originalAttendance = attendance.map((a) => ({ member_id: a.member_id, is_present: a.is_present, is_on_time: a.is_on_time }));
+
+function isDirty(cat) {
+    if (!props.requireReasons) return false;
+    if (isLineShape(cat.input_shape)) {
+        return lineSignature(rowsByCat[cat.id]) !== originalLineSig[cat.id];
+    }
+    if (cat.input_shape === 'binary_flat') {
+        return binaryOn[cat.id] !== originalBinaryOn[cat.id];
+    }
+    if (cat.input_shape === 'conditional_multiplier') {
+        const t = training[cat.id];
+        const o = originalTraining[cat.id];
+        return Number(t.members_present) !== o.members_present || !!t.whole_team !== o.whole_team;
+    }
+    if (cat.input_shape === 'roster_flat_penalty') {
+        const onTime = metricOf(cat) === 'on_time';
+        return attendance.some((a) => {
+            const orig = originalAttendance.find((o) => o.member_id === a.member_id);
+            return orig && (onTime ? a.is_on_time !== orig.is_on_time : a.is_present !== orig.is_present);
+        });
+    }
+    return false;
+}
+
+const reasons = reactive({});
+props.categories.forEach((c) => { reasons[c.id] = ''; });
+
+const allReasonsFilled = computed(() =>
+    props.categories.every((c) => !isDirty(c) || reasons[c.id].trim().length >= 3)
+);
+const anyDirty = computed(() => props.categories.some((c) => isDirty(c)));
 
 const openCat = ref(null);
 function toggle(id) {
@@ -174,7 +232,7 @@ function collectPayload() {
         }
     });
 
-    return {
+    const payload = {
         lines,
         attendance: attendance.map((a) => ({
             member_id: a.member_id,
@@ -182,9 +240,17 @@ function collectPayload() {
             is_on_time: a.is_on_time,
         })),
     };
+
+    if (props.requireReasons) {
+        payload.reasons = Object.fromEntries(
+            props.categories.filter((c) => isDirty(c)).map((c) => [c.id, reasons[c.id].trim()])
+        );
+    }
+
+    return payload;
 }
 
-defineExpose({ runningTotal, pulse, collectPayload });
+defineExpose({ runningTotal, pulse, collectPayload, isDirty, allReasonsFilled, anyDirty });
 </script>
 
 <template>
@@ -198,6 +264,12 @@ defineExpose({ runningTotal, pulse, collectPayload });
                 <span class="w-3 text-slate transition" :class="openCat === cat.id ? 'rotate-90' : ''">›</span>
                 <span class="rounded-md bg-paper-2 px-2 py-1 font-mono text-[11px] font-semibold text-slate">{{ cat.code }}</span>
                 <span class="flex-1 font-semibold text-ink">{{ cat.name }}</span>
+                <span
+                    v-if="requireReasons && isDirty(cat)"
+                    class="h-2 w-2 shrink-0 rounded-full"
+                    :class="reasons[cat.id].trim() ? 'bg-turf' : 'bg-bronze'"
+                    :title="reasons[cat.id].trim() ? 'Changed — reason added' : 'Changed — reason required'"
+                ></span>
                 <span class="font-mono text-[15px] font-semibold" :class="catSubtotal(cat) ? 'text-ink' : 'text-slate'">
                     {{ catSubtotal(cat) }}
                 </span>
@@ -207,6 +279,17 @@ defineExpose({ runningTotal, pulse, collectPayload });
                 <p v-if="cat.code === 'TJM'" class="mb-3 rounded-input bg-gold/12 px-3 py-2 text-[13px] text-bronze">
                     Qualifies only with a minimum of 3 members from each team present.
                 </p>
+                <div v-if="requireReasons && isDirty(cat)" class="mb-3 rounded-input border border-gold/50 bg-gold/10 px-3 py-2">
+                    <label class="mb-1 block text-[11px] font-semibold text-bronze">
+                        Reason for this change <span>(required — the team will see this)</span>
+                    </label>
+                    <textarea
+                        v-model="reasons[cat.id]"
+                        rows="2"
+                        class="w-full rounded-input border border-line bg-white px-2.5 py-1.5 text-[13px] text-ink outline-none focus:border-gold"
+                        placeholder="Why did this change?"
+                    ></textarea>
+                </div>
                 <!-- count / amount: repeatable rows -->
                 <template v-if="isLineShape(cat.input_shape)">
                     <div
