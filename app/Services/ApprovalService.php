@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\DB;
  *
  *   draft ─submit→ submitted ─approve→ approved ─unlock→ submitted
  *   sent_back ─resubmit→ submitted ; submitted ─send back→ sent_back
+ *
+ * `editByLt` is not a transition (submitted stays submitted) — it lets LT fix
+ * a team's mistake directly instead of bouncing it back and waiting, but
+ * still requires and audits a reason so nothing changes silently.
  */
 class ApprovalService
 {
@@ -76,6 +80,62 @@ class ApprovalService
             $this->notifications->notifyTeam($entry->team_id, 'sent_back', [
                 'meeting' => $entry->meeting->sequence_no,
                 'note' => $note,
+            ]);
+
+            return $entry;
+        });
+    }
+
+    /**
+     * LT corrects a submitted entry's lines/attendance directly (instead of
+     * sending it back and waiting on the team) — a required reason is logged
+     * to the audit trail and the team is notified, so nothing changes silently.
+     * Status stays `submitted`; the corrected entry is recomputed and can
+     * then be approved/sent back as normal.
+     *
+     * @param  array<int, array<string, mixed>>  $lines
+     * @param  array<int, array<string, mixed>>  $attendance
+     */
+    public function editByLt(MeetingEntry $entry, LtUser $lt, array $lines, array $attendance, string $reason): MeetingEntry
+    {
+        $this->assertFrom($entry, [MeetingEntry::SUBMITTED]);
+
+        return DB::transaction(function () use ($entry, $lt, $lines, $attendance, $reason) {
+            $entry->lines()->delete();
+            foreach ($lines as $line) {
+                if (($line['count'] ?? 0) <= 0) {
+                    continue; // skip empty rows (binary "off" = count 0)
+                }
+                $entry->lines()->create([
+                    'category_id' => $line['category_id'],
+                    'scoring_rule_id' => $line['scoring_rule_id'],
+                    'member_id' => $line['member_id'] ?? null,
+                    'visitor_name' => $line['visitor_name'] ?? null,
+                    'count' => $line['count'],
+                    'whole_team' => $line['whole_team'] ?? null,
+                    'amount' => $line['amount'] ?? null,
+                ]);
+            }
+
+            $entry->attendance()->delete();
+            foreach ($attendance as $mark) {
+                $entry->attendance()->create([
+                    'member_id' => $mark['member_id'],
+                    'is_present' => $mark['is_present'],
+                    'is_on_time' => $mark['is_on_time'],
+                ]);
+            }
+
+            $breakdown = $this->scorer->breakdown($entry); // authoritative recompute
+
+            // Same status in/out — this is a correction, not a transition — but
+            // still goes through the same audit trail as every other change.
+            $this->record($entry, $entry->status, $entry->status, 'lt', $lt->id, $reason);
+
+            $this->notifications->notifyTeam($entry->team_id, 'corrected', [
+                'meeting' => $entry->meeting->sequence_no,
+                'reason' => $reason,
+                'total' => $breakdown['total'],
             ]);
 
             return $entry;

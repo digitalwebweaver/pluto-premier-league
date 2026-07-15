@@ -80,7 +80,7 @@ class EntryController extends Controller
                 ]),
             ]);
 
-        $lines = $entry->lines()->get(['id', 'category_id', 'scoring_rule_id', 'member_id', 'visitor_name', 'count', 'amount']);
+        $lines = $entry->lines()->get(['id', 'category_id', 'scoring_rule_id', 'member_id', 'visitor_name', 'count', 'whole_team', 'amount']);
         $attendance = $entry->attendance()->get(['member_id', 'is_present', 'is_on_time']);
 
         return Inertia::render('Team/Scorecard', [

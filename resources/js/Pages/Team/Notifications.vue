@@ -14,6 +14,7 @@ defineOptions({
 const META = {
     approved: { icon: '✓', accent: 'text-turf', bg: 'bg-turf/10' },
     sent_back: { icon: '↵', accent: 'text-bronze', bg: 'bg-bronze/10' },
+    corrected: { icon: '✎', accent: 'text-gold-ink', bg: 'bg-gold/10' },
     new_meeting: { icon: '◴', accent: 'text-gold-ink', bg: 'bg-gold/10' },
     announcement: { icon: '📣', accent: 'text-ink', bg: 'bg-paper-2' },
 };
@@ -25,6 +26,7 @@ function title(n) {
     return {
         approved: `Meeting ${p.meeting} approved`,
         sent_back: `Meeting ${p.meeting} sent back`,
+        corrected: `Meeting ${p.meeting} corrected by the LT`,
         new_meeting: `New meeting ${p.meeting} scheduled`,
         announcement: 'Announcement from the Leadership Team',
     }[n.type] ?? 'Notification';
@@ -34,6 +36,7 @@ function body(n) {
     return {
         approved: `${p.total} points now count on the league table.`,
         sent_back: p.note,
+        corrected: `${p.reason} (new total: ${p.total})`,
         new_meeting: p.date ? `Meeting date: ${p.date}.` : '',
         announcement: p.body,
     }[n.type] ?? '';

@@ -58,6 +58,7 @@ Route::prefix('lt')->middleware('guard:lt')->group(function () {
     // Approval queue + review + actions (Phase 4B/4C).
     Route::get('/queue', [ApprovalController::class, 'queue'])->name('lt.queue');
     Route::get('/queue/{entry}', [ApprovalController::class, 'review'])->name('lt.queue.review');
+    Route::put('/queue/{entry}', [ApprovalController::class, 'update'])->name('lt.queue.update');
     Route::post('/queue/{entry}/approve', [ApprovalController::class, 'approve'])->name('lt.queue.approve');
     Route::post('/queue/{entry}/send-back', [ApprovalController::class, 'sendBack'])->name('lt.queue.sendback');
     // Recently approved + unlock (Phase 4D).
