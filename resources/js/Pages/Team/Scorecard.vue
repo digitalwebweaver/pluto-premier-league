@@ -244,7 +244,7 @@ const entryPill = { draft: 'draft', submitted: 'submitted', approved: 'approved'
     </p>
 
     <!-- Category accordions -->
-    <div class="space-y-2 pb-28">
+    <div class="space-y-2 pb-44 nav:pb-28">
         <div v-for="cat in categories" :key="cat.id" class="overflow-hidden rounded-card border border-line bg-white">
             <button
                 type="button"
@@ -396,7 +396,7 @@ const entryPill = { draft: 'draft', submitted: 'submitted', approved: 'approved'
 
     <!-- Sticky running total + save -->
     <div
-        class="fixed inset-x-0 bottom-0 border-t border-line bg-white px-4 py-3 nav:left-[236px]"
+        class="fixed inset-x-0 bottom-[57px] border-t border-line bg-white px-4 py-3 nav:bottom-0 nav:left-[236px]"
         style="box-shadow: 0 -8px 24px rgba(18,33,61,0.10)"
     >
         <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
